@@ -16,10 +16,11 @@ class created_employes(tk.Frame):
         tk.Frame.__init__(self, parent) #create GUI
         LARGEFONT = ("Verdana", 25)
         self.controller.title('system') #uppertitle
-        self.configure(background='light green') #backround
         self.controller.geometry("800x500") #window size
-        main_label = ttk.Label(self, text="creat employee", font=LARGEFONT) #main label
+        main_label = ttk.Label(self, text="create employee", font=LARGEFONT) #main label
         main_label.grid(row=0, column=1, padx=10, pady=10)
+        self.vcmd = (self.register(self.validate_only_numbers),
+                '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
         self.about_window()
         self.design_page_one()
         self.white_window()
@@ -52,22 +53,49 @@ class created_employes(tk.Frame):
         phone = Label(self, text="Phone", bg="light green")
         position = Label(self, text="Position.", bg="light green")
         heading.grid(row=3, column=0, padx=10, pady=10) #label location
-        id.grid(row=4, column=0, padx=10, pady=10)
-        name.grid(row=5, column=0, padx=10, pady=10)
-        age.grid(row=6, column=0, padx=10, pady=10)
-        phone.grid(row=7, column=0, padx=10, pady=10)
-        position.grid(row=8, column=0, padx=10, pady=10)
+        id.grid(row=4, column=0)
+        name.grid(row=5, column=0)
+        age.grid(row=6, column=0)
+        phone.grid(row=7, column=0)
+        position.grid(row=8, column=0)
 
-        self.T = Text(self, height = 10, width = 40)
+        self.T = Text(self, height = 10, width = 50)
         self.T.grid(row=4, column=2, columnspan=4, rowspan=4,
                sticky=W+E+N+S)
 
-    def white_window(self): #create whites windows
+    def validate_only_numbers(self, action, index, value_if_allowed,
+                       prior_value, text, validation_type, trigger_type, widget_name):
+        # action=1 -> insert
+        if (action == '1'):
+            if text in '0123456789-+':
+                try:
+                    float(value_if_allowed)
+                    return True
+                except ValueError:
+                    return False
+            else:
+                return False
+        else:
+            return True
 
-        self.id = Entry(self)
+    def limit_entry(self, str_var, length): #age-2 numbers, phone- 9 numbers.
+        def callback(str_var):
+            c = str_var.get()[0:length]
+            str_var.set(c)
+
+        str_var.trace("w", lambda name, index, mode, str_var=str_var: callback(str_var))
+
+    def white_window(self): #create whites windows
+        age = StringVar()
+        phone = StringVar()
+
+        self.limit_entry(age, 3)
+        self.limit_entry(phone, 9)
+
+        self.id = Entry(self, validate = 'key', validatecommand = self.vcmd)
         self.name = Entry(self)
-        self.age = Entry(self)
-        self.phone = Entry(self)
+        self.age = Entry(self, validate = 'key', validatecommand = self.vcmd, textvariable=age)
+        self.phone = Entry(self, validate = 'key', validatecommand = self.vcmd, textvariable=phone)
         self.position = Entry(self)
 
         self.id.bind("<Return>", self.focus1) #whenever the enter key is pressed then call the focus function
@@ -76,12 +104,11 @@ class created_employes(tk.Frame):
         self.phone.bind("<Return>", self.focus4)
         self.position.bind("<Return>", self.focus5)
 
-
-        self.id.grid(row=4, column=1, padx=10, pady=10)  #grid method is used for placing the widgets at respective positions in table like structure .
-        self.name.grid(row=5, column=1, padx=10, pady=10)
-        self.age.grid(row=6, column=1, padx=10, pady=10)
-        self.phone.grid(row=7, column=1, padx=10, pady=10)
-        self.position.grid(row=8, column=1, padx=10, pady=10)
+        self.id.grid(row=4, column=1)  #grid method is used for placing the widgets at respective positions in table like structure .
+        self.name.grid(row=5, column=1)
+        self.age.grid(row=6, column=1)
+        self.phone.grid(row=7, column=1)
+        self.position.grid(row=8, column=1)
 
     def clear(self):  # clear the content of box after clicked the button
         self.id.delete(0, END)
@@ -128,7 +155,7 @@ class created_employes(tk.Frame):
         if self.check_exsist('excel.xlsx'):
             self.df = pd.read_excel('excel.xlsx')
         else:
-            self.df = pd.DataFrame(columns=['ID', 'Name', 'Phone', 'Age', 'Position'])
+            self.df = pd.DataFrame(columns=['ID', 'Name', 'Age', 'Phone', 'Position'])
 
     def write_to_txt_box(self, S):
         self.T.insert(END, S.to_string(index=False))
@@ -143,11 +170,11 @@ class created_employes(tk.Frame):
         self.get_values =[]
         for i in self.selfs_list[0]:
             self.get_values.append(i.get())
-        id = int(self.id.get())
+        s = self.id.get()
         res = id in self.df['ID'].values
         if "" in self.get_values:
             self.error()
-        elif res:
+        elif int(s) in self.df['ID'].values:
             self.error('id_exists')
             self.clear()
         else:
@@ -155,7 +182,7 @@ class created_employes(tk.Frame):
             self.add_list_get_values.append(self.get_values)
             self.df = self.df.append(pd.DataFrame(self.add_list_get_values,
                                index=[0],
-                               columns=['ID', 'Name', 'Phone', 'Age', 'Position']))
+                               columns=['ID', 'Name', 'Age', 'Phone', 'Position']))
             self.df.head()
             self.df.to_excel('excel.xlsx', sheet_name = 'Employees',index=False)
             self.write_to_txt_box(self.df)
@@ -181,13 +208,13 @@ class created_employes(tk.Frame):
         submit.grid(row=9, column=1)
         button1 = ttk.Button(self, text="attendance log",
                              command=lambda: self.controller.show_frame(attendance_log.attendance_log))
-        button1.grid(row=9, column=2, padx=10, pady=10)
+        button1.grid(row=10, column=5)
         button2 = ttk.Button(self, text="delete employee",
                              command=lambda: self.controller.show_frame(delete_employee.delete_employee))
-        button2.grid(row=10, column=2, padx=10, pady=10)
+        button2.grid(row=11, column=5)
         button3 = ttk.Button(self, text="search employee",
                              command=lambda: self.controller.show_frame(search_employee_by_id.search_employee_by_id))
-        button3.grid(row=11, column=2, padx=10, pady=10)
+        button3.grid(row=12, column=5)
         refresh = Button(self, text="refresh", command= self.refresh)
         refresh.grid(row=8, column=2, padx=10, pady=10)
         export = Button(self, text="export to txt", command=self.export_txt_box_to_file)

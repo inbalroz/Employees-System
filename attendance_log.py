@@ -2,27 +2,40 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 import pandas as pd
-
 import created_employes
 import delete_employee
 import search_employee_by_id
-
-#attendance log
 
 class attendance_log(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        self.configure(background='light green') # backround
         self.controller.geometry("800x500")
         w = Label(self, text='Attendance log', bg="light green", fg="black", font=30)
         w.grid(row=1, column=1, pady=10)
+        self.vcmd = (self.register(self.validate_only_numbers),
+                     '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
         self.lates_or_all()
         self.year_box()
         self.month_box()
         self.ID_box()
         self.design_page_one()
         self.button()
+
+    def validate_only_numbers(self, action, index, value_if_allowed,
+                       prior_value, text, validation_type, trigger_type, widget_name):
+        # action=1 -> insert
+        if (action == '1'):
+            if text in '0123456789-+':
+                try:
+                    float(value_if_allowed)
+                    return True
+                except ValueError:
+                    return False
+            else:
+                return False
+        else:
+            return True
 
     def lates_or_all(self):
         OPTIONS = [
@@ -32,7 +45,7 @@ class attendance_log(tk.Frame):
         self.lates = StringVar(self)# default value
         x = self.lates.set('select info')
         w_option_box = OptionMenu(self, self.lates, *OPTIONS)
-        w_option_box.grid(row=2, column=1,columnspan=4, sticky=W, pady=10, padx = 5)
+        w_option_box.grid(row=2, column=1,rowspan=1, padx = 5, sticky=NW)
 
     def read_new_year(self): #Every year need to refresh the new year
         self.df = pd.read_excel('computer clock.xlsx')
@@ -51,9 +64,9 @@ class attendance_log(tk.Frame):
                    "2019"]
         OPTIONS.append(filter_years[-1])
         self.chosen_year = StringVar(self)
-        y = self.chosen_year.set('2020')  # default value
+        y = self.chosen_year.set('select year')  # default value
         w = OptionMenu(self, self.chosen_year, *OPTIONS)
-        w.grid(row=2, column=1, columnspan=4, sticky=N, pady=10, padx = 5)
+        w.grid(row=3, column=1, rowspan=1, columnspan=3, padx = 5, sticky=NW)
 
     def month_box(self):
         OPTIONS = [
@@ -64,13 +77,13 @@ class attendance_log(tk.Frame):
         self.chosen_month = StringVar(self)
         z = self.chosen_month.set('select month')  # default value
         w = OptionMenu(self, self.chosen_month, *OPTIONS)
-        w.grid(row=2, column=1, columnspan=4, sticky=E, pady=10, padx = 5)
+        w.grid(row=3, column=1, rowspan=1, columnspan=3, padx = 5, sticky=N)
 
     def design_page_one(self):
         Filter = Label(self, text="Filter", bg="light green", fg="red")
         Filter.grid(row=2, column=0)
-        id = Label(self, text="ID", bg="light green")
-        id.grid(row=3, column=1, columnspan=2, sticky = NW, rowspan = 1)
+        id = Label(self, text="ID")
+        id.grid(row=2, column=2, padx = 5)
         self.T = Text(self, height = 20, width = 50)
         self.T.grid(row=4, column=0, padx=10, columnspan=4, rowspan=4,
                sticky=W+E+N+S)
@@ -87,9 +100,9 @@ class attendance_log(tk.Frame):
         self.id.focus_set()
 
     def ID_box(self):
-        self.id = Entry(self)
+        self.id = Entry(self, validate = 'key', validatecommand = self.vcmd)
         self.id.bind("<Return>", self.focus1)
-        self.id.grid(row=3, column=1, columnspan=2, sticky = N, rowspan = 1)
+        self.id.grid(row=2, column=3, padx = 5)
 
     def clear_id_box(self):  # clear the content of box after clicked the button
         self.id.delete(0, END)
@@ -127,14 +140,14 @@ class attendance_log(tk.Frame):
         search.grid(row=3, column=5,columnspan=2, sticky=E, pady=10, padx = 5)
         export_to_excel_file = ttk.Button(self, text='export to excel file', command=self.export_to_excel_file)
         export_to_excel_file.grid(row=4, column=5, columnspan=2, sticky=E, pady=10, padx=5)
-        button1 = ttk.Button(self, text="creat employee",
+        button1 = ttk.Button(self, text="create employee",
                              command=lambda: self.controller.show_frame(created_employes.created_employes))
-        button1.grid(row=5, column=5,columnspan=2, sticky = SE, padx=10)
+        button1.grid(row=5,rowspan=3, column=5)
         button2 = ttk.Button(self, text="delete employee",
                              command=lambda: self.controller.show_frame(delete_employee.delete_employee))
-        button2.grid(row=6, column=5, columnspan=2, sticky = SE, padx=10)
+        button2.grid(row=6,rowspan=3, column=5)
 
         button3 = ttk.Button(self, text="search employee",
                              command=lambda: self.controller.show_frame(search_employee_by_id.search_employee_by_id))
-        button3.grid(row=7, column=5,columnspan=2, sticky = SE, padx=10)
+        button3.grid(row=7,rowspan=3, column=5)
 

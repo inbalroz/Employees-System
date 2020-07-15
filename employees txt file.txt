@@ -1,2 +1,5 @@
-   ID   Name  Phone  Age  Position
-0   1  Inbal     29    1         1
+ID   Name Age      Phone   Position
+ 1  Inbal  29  543095991    manager
+ 2   Oded  30   54984817  developer
+ 3  Berry   1    5667825  developer
+ 4   Fifa   8  555675675  developer

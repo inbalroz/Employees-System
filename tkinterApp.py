@@ -1,6 +1,4 @@
 import tkinter as tk
-from tkinter import ttk
-from tkinter import *
 import created_employes
 import attendance_log
 import delete_employee
